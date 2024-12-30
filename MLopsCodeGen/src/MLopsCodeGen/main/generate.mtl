@@ -1,0 +1,94 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.example.org/mLopsmodel')]
+
+[template public GenerateFiles(aPipeline : Pipeline)]
+[comment @main/]
+
+[comment --- Dockerfile --- /]
+[file (aPipeline.name + '_Dockerfile', false)]
+# Dockerfile for the pipeline: [aPipeline.name/]
+FROM python:3.8-slim
+
+WORKDIR /app
+
+COPY [aPipeline.dataprocessing.inputPath/] /app/data/
+
+# Install specific dependencies from the model
+[for (dep : Dependency | aPipeline.dependency)]
+[if (dep.version <> null)]
+RUN pip install [dep.name/]==[dep.version/]
+[/if]
+[/for]
+
+# Deployment-specific settings
+[if (aPipeline.deployment.targetPlatform.equalsIgnoreCase('Docker'))]
+ENV SCALABILITY_LEVEL=[aPipeline.deployment.scalability/]
+EXPOSE 8080
+[/if]
+
+# Command to train the model
+CMD "python", "train.py", "--algorithm", "[aPipeline.training.algorithm/]"]
+[/file]
+
+[comment --- YAML Deployment Configuration --- /]
+[file (aPipeline.name + '_deployment.yaml', false)]
+pipeline:
+  name: "[aPipeline.name/]"
+  version: "[aPipeline.version/]"
+  
+  training:
+    algorithm: "[aPipeline.training.algorithm/]"
+    parameters:
+[for (param : Parameter | aPipeline.training.parameter)]
+      - key: "[param.key/]"
+        value: "[param.value/]"
+[/for]
+
+  dependencies:
+[for (dep : Dependency | aPipeline.dependency)]
+    - name: "[dep.name/]"
+      version: "[dep.version/]"
+[/for]
+
+  dataprocessing:
+    inputPath: "[aPipeline.dataprocessing.inputPath/]"
+    outputPath: "[aPipeline.dataprocessing.outputPath/]"
+
+  deployment:
+    targetPlatform: "[aPipeline.deployment.targetPlatform/]"
+    scalability: [aPipeline.deployment.scalability/]
+[/file]
+
+[comment --- Training Script --- /]
+[file (aPipeline.name + '_train.py', false)]
+# Training script for the pipeline: [aPipeline.name/]
+import argparse
+import os
+
+def train(algorithm, params):
+    print(f"Training model using {algorithm} with parameters:")
+    for key, value in params.items():
+        print(f"  {key}: {value}")
+    # Placeholder for actual training logic
+    print("Training complete!")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train a machine learning model.")
+    parser.add_argument("--algorithm", type=str, required=True, help="Algorithm to use for training.")
+    
+    # Add parameters as arguments
+[for (param : Parameter | aPipeline.training.parameter)]
+    parser.add_argument("--[param.key/]", type=str, default="[param.value/]", help="[param.key/] parameter.")
+[/for]
+
+    args = parser.parse_args()
+    params = {
+[for (param : Parameter | aPipeline.training.parameter)]
+        "[param.key/]": args.[param.key/],
+[/for]
+    }
+
+    train(args.algorithm, params)
+[/file]
+
+[/template]
