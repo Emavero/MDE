@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated mLopsmodel -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="mLopsmodel.presentation.MLopsmodelModelWizardID"
+            name="%_UI_MLopsmodelModelWizard_label"
+            class="mLopsmodel.presentation.MLopsmodelModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/MLopsmodelModelFile.gif">
+         <description>%_UI_MLopsmodelModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated mLopsmodel -->
+      <editor
+            id="mLopsmodel.presentation.MLopsmodelEditorID"
+            name="%_UI_MLopsmodelEditor_label"
+            icon="icons/full/obj16/MLopsmodelModelFile.gif"
+            extensions="mlopsmodel"
+            class="mLopsmodel.presentation.MLopsmodelEditor"
+            contributorClass="mLopsmodel.presentation.MLopsmodelActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>
